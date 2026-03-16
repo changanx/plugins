@@ -128,6 +128,33 @@ writing-plans（通用）
 | **frontend-developer** | 前端功能实现 | 前端计划任务、API 定义 | 页面、组件、API 调用代码 |
 | **backend-developer** | 后端功能实现 | 后端计划任务 | Controller、Service、Mapper 代码 |
 
+#### Agent 通信机制
+
+Agent 之间通过共享文件进行通信：
+
+```
+.claude/team-session/
+├── design-doc.md           # 设计文档（只读，所有 Agent 共享）
+├── plan.md                 # 实现计划（只读，所有 Agent 共享）
+├── frontend-tasks.md       # 前端任务状态
+├── backend-tasks.md        # 后端任务状态
+├── api-changes.md          # API 变更记录
+├── blockers.md             # 阻塞问题记录
+└── review-feedback/        # Review 反馈
+    ├── frontend.md
+    └── backend.md
+```
+
+**通信规则：**
+
+| 事件 | 操作 | 文件 |
+|------|------|------|
+| 任务开始 | 更新状态为 `in_progress` | `*-tasks.md` |
+| 任务完成 | 更新状态为 `completed`，记录产出 | `*-tasks.md` |
+| 遇到阻塞 | 写入阻塞描述 | `blockers.md` |
+| API 变更 | 记录变更内容和原因 | `api-changes.md` |
+| Review 反馈 | 写入反馈内容 | `review-feedback/*.md` |
+
 #### 协作流程
 
 ```
@@ -224,7 +251,11 @@ export function fetchUsers(params) {
 
 ### 3.3 设计文档模板增强
 
-在现有模板基础上新增前端设计章节：
+**目标文件**：`xo1997-dev/docs/templates/design-document-template.md`
+
+**修改方式**：在现有模板基础上新增前端设计章节（3.4 节）
+
+**新增内容**：
 
 ```markdown
 ## 3. 详细设计
@@ -308,7 +339,7 @@ Step 5: 联调验证
 - 确认完整流程通过
 
 Step 6: 完成处理
-- 调用 finishing-a-development-branch
+- 调用 `skills/finishing-a-development-branch/SKILL.md` 技能
 - 处理分支合并/PR
 ```
 
@@ -316,12 +347,28 @@ Step 6: 完成处理
 
 ## 4. 错误处理
 
+### 4.1 常见错误场景
+
 | 场景 | 处理方式 |
 |------|----------|
 | API 定义不明确 | team-coordinator 协调前后端确认 |
 | 前后端实现冲突 | team-coordinator 仲裁，更新设计文档 |
 | 一方进度阻塞 | team-coordinator 评估影响，调整计划 |
 | 测试失败 | 各 Agent 自行调试，必要时协调 |
+
+### 4.2 Agent 异常处理
+
+| 场景 | 处理方式 |
+|------|----------|
+| Agent 执行失败 | team-coordinator 记录错误，重试或人工介入 |
+| 部分完成（前端完成，后端失败） | 保留前端代码，记录后端待办，等待后续处理 |
+| 长时间任务超时 | 设置超时阈值（如 30 分钟），超时后 team-coordinator 检查进度并决定是否继续 |
+| API 同时变更冲突 | 先提交方优先，后提交方合并变更；team-coordinator 裁决不一致情况 |
+
+### 4.3 恢复机制
+
+- **状态检查点**：每个任务完成后写入状态文件，支持从中断点恢复
+- **人工介入点**：当 team-coordinator 无法自动处理时，暂停并等待用户决策
 
 ---
 
@@ -345,6 +392,42 @@ Step 6: 完成处理
 ---
 
 ## 6. 实现注意事项
+
+### 6.1 实现顺序（按依赖关系）
+
+```
+Phase 1: 基础设施
+├── 1. Agent 定义文件编写
+│   ├── agents/team-coordinator.md
+│   ├── agents/frontend-developer.md
+│   └── agents/backend-developer.md
+├── 2. 设计文档模板更新
+│   └── docs/templates/design-document-template.md
+└── 3. 目录结构调整
+    ├── 创建 frontend/skills/ 目录
+    └── 创建 backend/skills/ 目录
+
+Phase 2: 后端迁移（无依赖）
+└── 迁移现有 springboot-* 技能到 backend/skills/
+
+Phase 3: 前端技能开发（依赖 Phase 1）
+├── frontend/skills/vue3-best-practices/
+├── frontend/skills/vue3-project-structure/
+├── frontend/skills/vue3-component-dev/
+├── frontend/skills/vue3-api-integration/
+├── frontend/skills/vue3-state-management/
+└── frontend/skills/vue3-testing/
+
+Phase 4: Team 开发模式（依赖 Phase 1, 2, 3）
+├── skills/team-driven-development/SKILL.md
+└── skills/writing-plans/SKILL.md 更新（增加执行模式选择逻辑）
+
+Phase 5: 集成测试
+├── 单端开发流程验证
+└── Team 开发流程验证
+```
+
+### 6.2 关键实现点
 
 1. **现有后端技能迁移**：将 `springboot-*` 技能迁移到 `backend/skills/` 目录
 2. **技能路径适配**：更新 `using-xo1997-dev` 技能，支持前端/后端技能发现
