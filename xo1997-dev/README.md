@@ -112,7 +112,7 @@ Start a new session in your chosen platform and ask for something that should tr
 
 **Meta**
 - **writing-skills** - Create new skills following best practices (includes testing methodology)
-- **using-superpowers** - Introduction to the skills system
+- **using-xo1997-dev** - Introduction to the skills system
 
 ## Philosophy
 
