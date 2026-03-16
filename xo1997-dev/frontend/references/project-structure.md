@@ -50,12 +50,12 @@ src/
 │
 ├── views/                  # Page components
 │   ├── home/
-│   │   └── Index.vue
+│   │   └── HomeIndex.vue
 │   ├── user/
-│   │   ├── List.vue
-│   │   └── Detail.vue
+│   │   ├── UserList.vue
+│   │   └── UserDetail.vue
 │   └── error/
-│       └── 404.vue
+│       └── NotFound.vue
 │
 ├── App.vue                 # Root component
 └── main.js                 # Application entry
