@@ -115,6 +115,34 @@ public class XxxVO {
 **性能优化考虑：**
 - [索引优化说明]
 
+### 3.4 前端设计（Vue3 项目）
+
+> 本章节用于前端开发设计，如无需前端开发可跳过。
+
+#### 页面结构
+
+| 页面 | 路由 | 组件 | 说明 |
+|------|------|------|------|
+| [页面名称] | [/path] | views/[module]/[Name].vue | [页面描述] |
+
+#### 组件设计
+
+| 组件名 | 路径 | Props | Emits | 说明 |
+|--------|------|-------|-------|------|
+| [ComponentName] | components/[module]/[Name].vue | [prop1, prop2] | [event1, event2] | [组件描述] |
+
+#### 状态管理
+
+| Store | 文件 | State | Actions | 说明 |
+|-------|------|-------|---------|------|
+| use[Name]Store | stores/[name].js | [state1, state2] | [action1, action2] | [Store描述] |
+
+#### API 调用映射
+
+| 页面/组件 | API 函数 | 调用时机 | 说明 |
+|-----------|----------|----------|------|
+| [Component].vue | [apiFunction] | [onMounted/onSubmit] | [调用说明] |
+
 ---
 
 ## 4. 错误处理
