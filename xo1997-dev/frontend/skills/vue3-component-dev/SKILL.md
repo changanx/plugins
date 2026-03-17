@@ -23,7 +23,7 @@ description: Use when developing Vue3 components. Covers component design, Props
 
 <script setup>
 // Imports
-import { ref, computed, watch } from 'vue'
+import { ref, computed } from 'vue'
 
 // Props
 const props = defineProps({
@@ -40,22 +40,19 @@ const props = defineProps({
 // Emits
 const emit = defineEmits(['update:modelValue', 'change'])
 
-// Reactive state
-const localValue = ref(props.modelValue)
+// Computed with getter/setter for v-model pattern
+const localValue = computed({
+  get: () => props.modelValue,
+  set: (val) => emit('update:modelValue', val)
+})
 
 // Computed
 const displayValue = computed(() => localValue.value.toUpperCase())
 
-// Watch
-watch(() => props.modelValue, (newVal) => {
-  localValue.value = newVal
-})
-
 // Methods
 function handleInput(event) {
-  localValue.value = event.target.value
-  emit('update:modelValue', localValue.value)
-  emit('change', localValue.value)
+  localValue.value = event.target.value  // Uses computed setter
+  emit('change', event.target.value)
 }
 </script>
 
@@ -99,10 +96,38 @@ function handleSubmit() {
 
 ## v-model Implementation
 
+### Vue 3.4+ with defineModel (Recommended)
+
 ```vue
-<!-- CustomInput.vue -->
+<!-- CustomInput.vue - Vue 3.4+ -->
 <script setup>
-const props = defineProps(['modelValue'])
+// defineModel() is a compile-time macro that automatically
+// declares props and emits for v-model
+const modelValue = defineModel({ type: String, default: '' })
+</script>
+
+<template>
+  <input
+    :value="modelValue"
+    @input="modelValue = $event.target.value"
+  />
+</template>
+
+<!-- Usage -->
+<CustomInput v-model="text" />
+```
+
+### Vue 3.3 and below (Explicit Props)
+
+```vue
+<!-- CustomInput.vue - Vue 3.3 and below -->
+<script setup>
+const props = defineProps({
+  modelValue: {
+    type: String,
+    default: ''
+  }
+})
 const emit = defineEmits(['update:modelValue'])
 </script>
 
