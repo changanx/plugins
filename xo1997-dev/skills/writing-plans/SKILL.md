@@ -15,7 +15,7 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 
 **Context:** This should be run in a dedicated worktree (created by brainstorming skill).
 
-**Save plans to:** `docs/plans/YYYY-MM-DD-<feature-name>.md`
+**Save plans to:** `docs/superpowers/plans/YYYY-MM-DD-<feature-name>.md`
 - (User preferences for plan location override this default)
 
 ## Scope Check
@@ -297,14 +297,40 @@ After completing each chunk of the plan:
 
 After saving the plan:
 
-**"Plan complete and saved to `docs/plans/<filename>.md`. Ready to execute?"**
+**"Plan complete and saved to `docs/superpowers/plans/<filename>.md`. Ready to execute?"**
 
-**Execution path depends on harness capabilities:**
+### Execution Mode Selection
+
+Choose the execution mode based on plan scope:
+
+```dot
+digraph execution_mode {
+    "Plan saved" [shape=box];
+    "Both frontend AND backend?" [shape=diamond];
+    "subagent-driven-development" [shape=box style=filled fillcolor=lightgreen];
+    "team-driven-development" [shape=box style=filled fillcolor=lightblue];
+
+    "Plan saved" -> "Both frontend AND backend?";
+    "Both frontend AND backend?" -> "team-driven-development" [label="yes"];
+    "Both frontend AND backend?" -> "subagent-driven-development" [label="no - single focus"];
+}
+```
+
+**Decision rules:**
+- **subagent-driven-development**: Single focus (frontend only OR backend only)
+  - Fresh subagent per task + two-stage review (spec compliance, then code quality)
+  - Works well for focused changes with clear boundaries
+- **team-driven-development**: Both frontend AND backend work required
+  - Multi-agent coordination (team-coordinator, frontend-developer, backend-developer)
+  - Parallel development with shared communication files
+  - Use when frontend and backend tasks have dependencies
+
+### Harness Capability Check
 
 **If harness has subagents (Claude Code, etc.):**
-- **REQUIRED:** Use subagent-driven-development
-- Do NOT offer a choice - subagent-driven is the standard approach
-- Fresh subagent per task + two-stage review
+- Use the execution mode selected above (subagent-driven or team-driven)
+- Do NOT offer a choice - follow the decision rules
+- Both modes leverage subagents effectively
 
 **If harness does NOT have subagents:**
 - Execute plan in current session using executing-plans
